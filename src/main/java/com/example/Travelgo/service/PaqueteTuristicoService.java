@@ -2,6 +2,7 @@ package com.example.Travelgo.service;
 
 import java.util.List;
 
+import com.example.Travelgo.dto.PaqueteTuristicoResponse;
 import com.example.Travelgo.model.PaqueteTuristico;
 
 public interface PaqueteTuristicoService {
@@ -11,4 +12,7 @@ public interface PaqueteTuristicoService {
     PaqueteTuristico crear(PaqueteTuristico paquete);
     PaqueteTuristico actualizar(Long id, PaqueteTuristico paquete);
     void eliminar(Long id);
+    // Nuevo método que incluye el itinerario mapeado
+    PaqueteTuristicoResponse buscarPorIdConDetalle(Long id); 
+// ...
 }

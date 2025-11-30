@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Travelgo.dto.PaqueteTuristicoResponse;
 import com.example.Travelgo.model.PaqueteTuristico;
 import com.example.Travelgo.service.PaqueteTuristicoService;
 
@@ -27,8 +28,9 @@ public class PaqueteTuristicoController {
     }
 
     @GetMapping("/{id}")
-    public PaqueteTuristico getById(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public PaqueteTuristicoResponse getById(@PathVariable Long id) { // ✅ AHORA
+        // Necesitas un nuevo método en el servicio que devuelva el DTO
+        return service.buscarPorIdConDetalle(id); 
     }
 
     @PostMapping

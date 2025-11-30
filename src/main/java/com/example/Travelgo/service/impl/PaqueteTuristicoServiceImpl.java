@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Travelgo.dto.PaqueteTuristicoResponse;
 import com.example.Travelgo.exception.NotFoundException;
+import com.example.Travelgo.model.Itinerario;
 import com.example.Travelgo.model.PaqueteTuristico;
 import com.example.Travelgo.repository.PaqueteTuristicoRepository;
 import com.example.Travelgo.service.PaqueteTuristicoService;
@@ -53,6 +55,34 @@ public class PaqueteTuristicoServiceImpl implements PaqueteTuristicoService {
         // Agrega aquí otros campos si los tienes
         return repo.save(actual);
     }
+
+    @Override
+@Transactional(readOnly = true)
+public PaqueteTuristicoResponse buscarPorIdConDetalle(Long id) {
+    // 1. Obtener la entidad de la DB
+    PaqueteTuristico paquete = repo.findById(id)
+            .orElseThrow(() -> new NotFoundException("Paquete turístico no encontrado: " + id));
+
+    // 2. Lógica para obtener el Itinerario.
+    //    *NOTA: ESTA ES LA PARTE CRÍTICA*
+    //    Aquí deberías obtener el itinerario real si lo estuvieras cargando desde la DB.
+    //    Para fines de prueba, mapeamos el ejemplo de Valparaíso solo para el ID 1.
+    List<Itinerario> itinerario;
+    if (id == 1L) {
+        itinerario = List.of(
+            new Itinerario(1, "Llegada y paseo por los cerros Alegre y Concepción."),
+            new Itinerario(1, "Almuerzo en el Mercado Puerto."),
+            new Itinerario(1, "Recorrido en Ascensor El Peral y cena con vista al mar."),
+            new Itinerario(2, "Hola soy un test del dia 2 :D")
+        );
+    } else {
+        // Para todos los demás, devuelve una lista vacía.
+        itinerario = List.of();
+    }
+
+    // 3. Devolver el DTO con el paquete y el itinerario
+    return new PaqueteTuristicoResponse(paquete, itinerario);
+}
 
     @Override
     public void eliminar(Long id) {
