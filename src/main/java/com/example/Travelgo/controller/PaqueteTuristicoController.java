@@ -15,8 +15,11 @@ import com.example.Travelgo.dto.PaqueteTuristicoResponse;
 import com.example.Travelgo.model.PaqueteTuristico;
 import com.example.Travelgo.service.PaqueteTuristicoService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping("/api/paquetes")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PaqueteTuristicoController {
 
     @Autowired
@@ -28,8 +31,7 @@ public class PaqueteTuristicoController {
     }
 
     @GetMapping("/{id}")
-    public PaqueteTuristicoResponse getById(@PathVariable Long id) { // ✅ AHORA
-        // Necesitas un nuevo método en el servicio que devuelva el DTO
+    public PaqueteTuristicoResponse getById(@PathVariable Long id) { 
         return service.buscarPorIdConDetalle(id); 
     }
 

@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy; 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -46,20 +49,29 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         
         .authorizeHttpRequests(auth -> auth
-            // 🔑 1. DEFINICIÓN DE RUTAS PÚBLICAS (Login y Docs)
+            //   DEFINICIÓN DE RUTAS PÚBLICAS (Login y Docs)
             .requestMatchers(
                 // Login endpoint
                 "/api/v1/auth/login", 
                 // Documentación y H2 Console
+                "/v3/api-docs",
                 "/v3/api-docs/**",
                 "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/doc/swagger-ui/**",
+                "/doc/swagger-ui.html",
                 "/h2-console/**"
             ).permitAll() // Estas rutas permiten el acceso sin autenticación
             
-            // 🔒 2. DEFINICIÓN DE RUTAS PRIVADAS (Todas las demás)
-            .anyRequest().authenticated() // Cualquier otra solicitud requiere autenticación
+            //   DEFINICIÓN DE RUTAS PRIVADAS (Todas las demás)
+            .requestMatchers(HttpMethod.POST, "/api/paquetes").hasAuthority("ROLE_ADMIN")
+            // Rutas protegidas: DELETE /api/paquetes/{id} -> Solo ROLE_ADMIN
+            .requestMatchers(HttpMethod.DELETE, "/api/paquetes/**").hasAuthority("ROLE_ADMIN")
+            // Rutas protegidas: GET /api/paquetes/** -> Cualquier usuario autenticado
+            .requestMatchers(HttpMethod.GET, "/api/paquetes/**").authenticated()
+
+            // Cualquier otra solicitud requiere autenticación
+            .anyRequest().authenticated()
         )
         .exceptionHandling(handling -> handling
             // Asegura que las solicitudes no autenticadas (que intenten acceder a rutas protegidas) 
@@ -67,7 +79,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .authenticationEntryPoint((request, response, authException) -> 
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
         )
-        // ➡️ 3. Agregar el filtro de JWT *después* de definir las reglas de autorización
+        //  Agregar el filtro de JWT *después* de definir las reglas de autorización
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

@@ -9,6 +9,7 @@ import com.example.Travelgo.dto.PaqueteTuristicoResponse;
 import com.example.Travelgo.exception.NotFoundException;
 import com.example.Travelgo.model.Itinerario;
 import com.example.Travelgo.model.PaqueteTuristico;
+import com.example.Travelgo.repository.ItinerarioRepository; 
 import com.example.Travelgo.repository.PaqueteTuristicoRepository;
 import com.example.Travelgo.service.PaqueteTuristicoService;
 
@@ -17,9 +18,12 @@ import com.example.Travelgo.service.PaqueteTuristicoService;
 public class PaqueteTuristicoServiceImpl implements PaqueteTuristicoService {
 
     private final PaqueteTuristicoRepository repo;
+    private final ItinerarioRepository itinerarioRepo; 
 
-    public PaqueteTuristicoServiceImpl(PaqueteTuristicoRepository repo) {
+    // Constructor actualizado para inyectar ItinerarioRepository
+    public PaqueteTuristicoServiceImpl(PaqueteTuristicoRepository repo, ItinerarioRepository itinerarioRepo) {
         this.repo = repo;
+        this.itinerarioRepo = itinerarioRepo;
     }
 
     @Override
@@ -43,6 +47,7 @@ public class PaqueteTuristicoServiceImpl implements PaqueteTuristicoService {
 
     @Override
     public PaqueteTuristico crear(PaqueteTuristico paquete) {
+        paquete.setId(null);
         return repo.save(paquete);
     }
 
@@ -52,37 +57,26 @@ public class PaqueteTuristicoServiceImpl implements PaqueteTuristicoService {
         actual.setNombre(paquete.getNombre());
         actual.setDescripcion(paquete.getDescripcion());
         actual.setPrecio(paquete.getPrecio());
-        // Agrega aquí otros campos si los tienes
+        actual.setCategoria(paquete.getCategoria());
+        actual.setImagenUrl(paquete.getImagenUrl());
         return repo.save(actual);
     }
 
     @Override
-@Transactional(readOnly = true)
-public PaqueteTuristicoResponse buscarPorIdConDetalle(Long id) {
-    // 1. Obtener la entidad de la DB
-    PaqueteTuristico paquete = repo.findById(id)
-            .orElseThrow(() -> new NotFoundException("Paquete turístico no encontrado: " + id));
+    @Transactional(readOnly = true)
+    public PaqueteTuristicoResponse buscarPorIdConDetalle(Long id) {
+        // Obtener la entidad de la DB
+        PaqueteTuristico paquete = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Paquete turístico no encontrado: " + id));
 
-    // 2. Lógica para obtener el Itinerario.
-    //    *NOTA: ESTA ES LA PARTE CRÍTICA*
-    //    Aquí deberías obtener el itinerario real si lo estuvieras cargando desde la DB.
-    //    Para fines de prueba, mapeamos el ejemplo de Valparaíso solo para el ID 1.
-    List<Itinerario> itinerario;
-    if (id == 1L) {
-        itinerario = List.of(
-            new Itinerario(1, "Llegada y paseo por los cerros Alegre y Concepción."),
-            new Itinerario(1, "Almuerzo en el Mercado Puerto."),
-            new Itinerario(1, "Recorrido en Ascensor El Peral y cena con vista al mar."),
-            new Itinerario(2, "Hola soy un test del dia 2 :D")
-        );
-    } else {
-        // Para todos los demás, devuelve una lista vacía.
-        itinerario = List.of();
+        // Obtener el itinerario real desde la DB
+        List<Itinerario> itinerario = itinerarioRepo.findByPaqueteTuristico_Id(id);
+
+        System.out.println("Itinerario encontrado para ID " + id + ": " + itinerario.size() + " elementos.");
+
+        // Devolver el DTO con el paquete y el itinerario
+        return new PaqueteTuristicoResponse(paquete, itinerario);
     }
-
-    // 3. Devolver el DTO con el paquete y el itinerario
-    return new PaqueteTuristicoResponse(paquete, itinerario);
-}
 
     @Override
     public void eliminar(Long id) {

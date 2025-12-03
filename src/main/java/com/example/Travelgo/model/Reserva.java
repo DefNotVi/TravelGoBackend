@@ -14,13 +14,12 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String cliente; // Puedes agregar más campos según tu necesidad
+    private String cliente;
 
     @ElementCollection
     private List<Long> paqueteIds; // IDs de los paquetes reservados
 
     // getters y setters
-    // ...existing code...
 
     public Long getId() {
         return id;

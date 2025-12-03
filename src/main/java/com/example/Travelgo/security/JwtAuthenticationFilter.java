@@ -62,6 +62,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+
+        //debug
+
+    /*if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+        token = header.substring(7);
+        System.out.println(">>> DEBUG JWT: Intentando validar token."); // 👈 LOG
+
+        try {
+            email = jwtService.extractUsername(token);
+            System.out.println(">>> DEBUG JWT: Username extraído: " + email);
+        } catch (Exception e) {
+            System.err.println("!!! ERROR JWT: Token falló en extracción/validación. Razón: " + e.getMessage()); // 👈 LOG
+            // Dejar que siga (lo que lleva al 401)
+        }
+    }*/
+
         filterChain.doFilter(request, response);
     }
 }

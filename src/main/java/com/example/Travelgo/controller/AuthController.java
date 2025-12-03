@@ -31,21 +31,21 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
 
-        // 1. Autenticar credenciales
+        //  Autenticar credenciales
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 request.getEmail(),
                 request.getPassword()
         );
         authenticationManager.authenticate(authentication);
 
-        // 2. Cargar detalles del usuario (necesario si usamos In-Memory User o Custom User)
+        //  Cargar detalles del usuario (necesario si usamos In-Memory User o Custom User)
         UserDetails userDetails =
                 userDetailsService.loadUserByUsername(request.getEmail());
 
-        // 3. Generar token
+        //  Generar token
         String token = jwtService.generateToken(userDetails);
 
-        // 4. Devolver respuesta
+        //  Devolver respuesta
         return ResponseEntity.ok(new AuthResponse(token));
     }
 }
